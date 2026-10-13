@@ -92,6 +92,13 @@ public class BodyCompartmentBrowser extends JDialog implements BodyCompartmentLi
 
 	private final BodyCompartmentManager bodyCompartmentManager = Context.getApplicationContext().getBean(BodyCompartmentManager.class);
 
+	public BodyCompartmentBrowser() {
+		super();
+		MY_JDIALOG = this;
+		initialize();
+		setVisible(true);
+	}
+
 	public BodyCompartmentBrowser(JFrame parentFrame) {
 		super(parentFrame, true);
 		MY_JDIALOG = this;
