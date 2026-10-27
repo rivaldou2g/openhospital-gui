@@ -41,22 +41,45 @@
 		<![CDATA[SELECT 
     bli.BLI_ITEM_GROUP,
     bli.BLI_ITEM_DESC,
-    SUM(CASE WHEN WEEKDAY(b.BLL_DATE) = 0 THEN IF(b.BLL_PARENT_ID IS NULL, bli.BLI_QTY, -bli.BLI_QTY) ELSE 0 END) AS COUNT_MONDAY,
-    SUM(CASE WHEN WEEKDAY(b.BLL_DATE) = 0 THEN IF(b.BLL_PARENT_ID IS NULL, (bli.BLI_QTY * bli.BLI_ITEM_AMOUNT), -(bli.BLI_QTY * bli.BLI_ITEM_AMOUNT)) ELSE 0 END) AS AMOUNT_MONDAY,
-    SUM(CASE WHEN WEEKDAY(b.BLL_DATE) = 1 THEN IF(b.BLL_PARENT_ID IS NULL, bli.BLI_QTY, -bli.BLI_QTY) ELSE 0 END) AS COUNT_TUESDAY,
-    SUM(CASE WHEN WEEKDAY(b.BLL_DATE) = 1 THEN IF(b.BLL_PARENT_ID IS NULL, (bli.BLI_QTY * bli.BLI_ITEM_AMOUNT), -(bli.BLI_QTY * bli.BLI_ITEM_AMOUNT)) ELSE 0 END) AS AMOUNT_TUESDAY,
-    SUM(CASE WHEN WEEKDAY(b.BLL_DATE) = 2 THEN IF(b.BLL_PARENT_ID IS NULL, bli.BLI_QTY, -bli.BLI_QTY) ELSE 0 END) AS COUNT_WEDNESDAY,
-    SUM(CASE WHEN WEEKDAY(b.BLL_DATE) = 2 THEN IF(b.BLL_PARENT_ID IS NULL, (bli.BLI_QTY * bli.BLI_ITEM_AMOUNT), -(bli.BLI_QTY * bli.BLI_ITEM_AMOUNT)) ELSE 0 END) AS AMOUNT_WEDNESDAY,
-    SUM(CASE WHEN WEEKDAY(b.BLL_DATE) = 3 THEN IF(b.BLL_PARENT_ID IS NULL, bli.BLI_QTY, -bli.BLI_QTY) ELSE 0 END) AS COUNT_THURSDAY,
-    SUM(CASE WHEN WEEKDAY(b.BLL_DATE) = 3 THEN IF(b.BLL_PARENT_ID IS NULL, (bli.BLI_QTY * bli.BLI_ITEM_AMOUNT), -(bli.BLI_QTY * bli.BLI_ITEM_AMOUNT)) ELSE 0 END) AS AMOUNT_THURSDAY,
-    SUM(CASE WHEN WEEKDAY(b.BLL_DATE) = 4 THEN IF(b.BLL_PARENT_ID IS NULL, bli.BLI_QTY, -bli.BLI_QTY) ELSE 0 END) AS COUNT_FRIDAY,
-    SUM(CASE WHEN WEEKDAY(b.BLL_DATE) = 4 THEN IF(b.BLL_PARENT_ID IS NULL, (bli.BLI_QTY * bli.BLI_ITEM_AMOUNT), -(bli.BLI_QTY * bli.BLI_ITEM_AMOUNT)) ELSE 0 END) AS AMOUNT_FRIDAY,
-    SUM(CASE WHEN WEEKDAY(b.BLL_DATE) = 5 THEN IF(b.BLL_PARENT_ID IS NULL, bli.BLI_QTY, -bli.BLI_QTY) ELSE 0 END) AS COUNT_SATURDAY,
-    SUM(CASE WHEN WEEKDAY(b.BLL_DATE) = 5 THEN IF(b.BLL_PARENT_ID IS NULL, (bli.BLI_QTY * bli.BLI_ITEM_AMOUNT), -(bli.BLI_QTY * bli.BLI_ITEM_AMOUNT)) ELSE 0 END) AS AMOUNT_SATURDAY,
-    SUM(CASE WHEN WEEKDAY(b.BLL_DATE) = 6 THEN IF(b.BLL_PARENT_ID IS NULL, bli.BLI_QTY, -bli.BLI_QTY) ELSE 0 END) AS COUNT_SUNDAY,
-    SUM(CASE WHEN WEEKDAY(b.BLL_DATE) = 6 THEN IF(b.BLL_PARENT_ID IS NULL, (bli.BLI_QTY * bli.BLI_ITEM_AMOUNT), -(bli.BLI_QTY * bli.BLI_ITEM_AMOUNT)) ELSE 0 END) AS AMOUNT_SUNDAY,
-    SUM(IF(b.BLL_PARENT_ID IS NULL, bli.BLI_QTY, -bli.BLI_QTY)) AS TOTAL_WEEK_COUNT,
-    SUM(IF(b.BLL_PARENT_ID IS NULL, (bli.BLI_QTY * bli.BLI_ITEM_AMOUNT), -(bli.BLI_QTY * bli.BLI_ITEM_AMOUNT))) AS TOTAL_WEEK_AMOUNT
+    SUM(CASE WHEN WEEKDAY(b.BLL_DATE) = 0 AND b.BLL_PARENT_ID IS NULL THEN bli.BLI_QTY ELSE 0 END) AS COUNT_MONDAY,
+    SUM(CASE WHEN WEEKDAY(b.BLL_DATE) = 0 AND b.BLL_PARENT_ID IS NOT NULL THEN bli.BLI_QTY ELSE 0 END) AS REFUNDED_COUNT_MONDAY,
+    SUM(CASE WHEN WEEKDAY(b.BLL_DATE) = 0 AND b.BLL_PARENT_ID IS NULL THEN (bli.BLI_QTY * bli.BLI_ITEM_AMOUNT) ELSE 0 END) AS AMOUNT_MONDAY,
+    SUM(CASE WHEN WEEKDAY(b.BLL_DATE) = 0 AND b.BLL_PARENT_ID IS NOT NULL THEN (bli.BLI_QTY * bli.BLI_ITEM_AMOUNT) ELSE 0 END) AS REFUNDED_AMOUNT_MONDAY,
+
+    SUM(CASE WHEN WEEKDAY(b.BLL_DATE) = 1 AND b.BLL_PARENT_ID IS NULL THEN bli.BLI_QTY ELSE 0 END) AS COUNT_TUESDAY,
+    SUM(CASE WHEN WEEKDAY(b.BLL_DATE) = 1 AND b.BLL_PARENT_ID IS NOT NULL THEN bli.BLI_QTY ELSE 0 END) AS REFUNDED_COUNT_TUESDAY,
+    SUM(CASE WHEN WEEKDAY(b.BLL_DATE) = 1 AND b.BLL_PARENT_ID IS NULL THEN (bli.BLI_QTY * bli.BLI_ITEM_AMOUNT) ELSE 0 END) AS AMOUNT_TUESDAY,
+    SUM(CASE WHEN WEEKDAY(b.BLL_DATE) = 1 AND b.BLL_PARENT_ID IS NOT NULL THEN (bli.BLI_QTY * bli.BLI_ITEM_AMOUNT) ELSE 0 END) AS REFUNDED_AMOUNT_TUESDAY,
+
+    SUM(CASE WHEN WEEKDAY(b.BLL_DATE) = 2 AND b.BLL_PARENT_ID IS NULL THEN bli.BLI_QTY ELSE 0 END) AS COUNT_WEDNESDAY,
+    SUM(CASE WHEN WEEKDAY(b.BLL_DATE) = 2 AND b.BLL_PARENT_ID IS NOT NULL THEN bli.BLI_QTY ELSE 0 END) AS REFUNDED_COUNT_WEDNESDAY,
+    SUM(CASE WHEN WEEKDAY(b.BLL_DATE) = 2 AND b.BLL_PARENT_ID IS NULL THEN (bli.BLI_QTY * bli.BLI_ITEM_AMOUNT) ELSE 0 END) AS AMOUNT_WEDNESDAY,
+    SUM(CASE WHEN WEEKDAY(b.BLL_DATE) = 2 AND b.BLL_PARENT_ID IS NOT NULL THEN (bli.BLI_QTY * bli.BLI_ITEM_AMOUNT) ELSE 0 END) AS REFUNDED_AMOUNT_WEDNESDAY,
+
+    SUM(CASE WHEN WEEKDAY(b.BLL_DATE) = 3 AND b.BLL_PARENT_ID IS NULL THEN bli.BLI_QTY ELSE 0 END) AS COUNT_THURSDAY,
+    SUM(CASE WHEN WEEKDAY(b.BLL_DATE) = 3 AND b.BLL_PARENT_ID IS NOT NULL THEN bli.BLI_QTY ELSE 0 END) AS REFUNDED_COUNT_THURSDAY,
+    SUM(CASE WHEN WEEKDAY(b.BLL_DATE) = 3 AND b.BLL_PARENT_ID IS NULL THEN (bli.BLI_QTY * bli.BLI_ITEM_AMOUNT) ELSE 0 END) AS AMOUNT_THURSDAY,
+    SUM(CASE WHEN WEEKDAY(b.BLL_DATE) = 3 AND b.BLL_PARENT_ID IS NOT NULL THEN (bli.BLI_QTY * bli.BLI_ITEM_AMOUNT) ELSE 0 END) AS REFUNDED_AMOUNT_THURSDAY,
+
+    SUM(CASE WHEN WEEKDAY(b.BLL_DATE) = 4 AND b.BLL_PARENT_ID IS NULL THEN bli.BLI_QTY ELSE 0 END) AS COUNT_FRIDAY,
+    SUM(CASE WHEN WEEKDAY(b.BLL_DATE) = 4 AND b.BLL_PARENT_ID IS NOT NULL THEN bli.BLI_QTY ELSE 0 END) AS REFUNDED_COUNT_FRIDAY,
+    SUM(CASE WHEN WEEKDAY(b.BLL_DATE) = 4 AND b.BLL_PARENT_ID IS NULL THEN (bli.BLI_QTY * bli.BLI_ITEM_AMOUNT) ELSE 0 END) AS AMOUNT_FRIDAY,
+    SUM(CASE WHEN WEEKDAY(b.BLL_DATE) = 4 AND b.BLL_PARENT_ID IS NOT NULL THEN (bli.BLI_QTY * bli.BLI_ITEM_AMOUNT) ELSE 0 END) AS REFUNDED_AMOUNT_FRIDAY,
+
+    SUM(CASE WHEN WEEKDAY(b.BLL_DATE) = 5 AND b.BLL_PARENT_ID IS NULL THEN bli.BLI_QTY ELSE 0 END) AS COUNT_SATURDAY,
+    SUM(CASE WHEN WEEKDAY(b.BLL_DATE) = 5 AND b.BLL_PARENT_ID IS NOT NULL THEN bli.BLI_QTY ELSE 0 END) AS REFUNDED_COUNT_SATURDAY,
+    SUM(CASE WHEN WEEKDAY(b.BLL_DATE) = 5 AND b.BLL_PARENT_ID IS NULL THEN (bli.BLI_QTY * bli.BLI_ITEM_AMOUNT) ELSE 0 END) AS AMOUNT_SATURDAY,
+    SUM(CASE WHEN WEEKDAY(b.BLL_DATE) = 5 AND b.BLL_PARENT_ID IS NOT NULL THEN (bli.BLI_QTY * bli.BLI_ITEM_AMOUNT) ELSE 0 END) AS REFUNDED_AMOUNT_SATURDAY,
+
+    SUM(CASE WHEN WEEKDAY(b.BLL_DATE) = 6 AND b.BLL_PARENT_ID IS NULL THEN bli.BLI_QTY ELSE 0 END) AS COUNT_SUNDAY,
+    SUM(CASE WHEN WEEKDAY(b.BLL_DATE) = 6 AND b.BLL_PARENT_ID IS NOT NULL THEN bli.BLI_QTY ELSE 0 END) AS REFUNDED_COUNT_SUNDAY,
+    SUM(CASE WHEN WEEKDAY(b.BLL_DATE) = 6 AND b.BLL_PARENT_ID IS NULL THEN (bli.BLI_QTY * bli.BLI_ITEM_AMOUNT) ELSE 0 END) AS AMOUNT_SUNDAY,
+    SUM(CASE WHEN WEEKDAY(b.BLL_DATE) = 6 AND b.BLL_PARENT_ID IS NOT NULL THEN (bli.BLI_QTY * bli.BLI_ITEM_AMOUNT) ELSE 0 END) AS REFUNDED_AMOUNT_SUNDAY,
+
+    SUM(CASE WHEN b.BLL_PARENT_ID IS NULL THEN bli.BLI_QTY ELSE 0 END) AS TOTAL_WEEK_COUNT,
+    SUM(CASE WHEN b.BLL_PARENT_ID IS NOT NULL THEN bli.BLI_QTY ELSE 0 END) AS REFUNDED_TOTAL_WEEK_COUNT,
+    SUM(CASE WHEN b.BLL_PARENT_ID IS NULL THEN (bli.BLI_QTY * bli.BLI_ITEM_AMOUNT) ELSE 0 END) AS TOTAL_WEEK_AMOUNT,
+    SUM(CASE WHEN b.BLL_PARENT_ID IS NOT NULL THEN (bli.BLI_QTY * bli.BLI_ITEM_AMOUNT) ELSE 0 END) AS REFUNDED_TOTAL_WEEK_AMOUNT
 FROM OH_BILLITEMS bli
 JOIN OH_BILLS b ON bli.BLI_ID_BILL = b.BLL_ID
 LEFT JOIN OH_ADMISSION adm ON b.BLL_ADM_ID = adm.ADM_ID
@@ -74,25 +97,42 @@ ORDER BY bli.BLI_ITEM_GROUP, bli.BLI_ITEM_DESC ASC]]>
 	<field name="BLI_ITEM_GROUP" class="java.lang.String"/>
 	<field name="BLI_ITEM_DESC" class="java.lang.String"/>
 	<field name="COUNT_MONDAY" class="java.lang.Double"/>
+	<field name="REFUNDED_COUNT_MONDAY" class="java.lang.Double"/>
 	<field name="AMOUNT_MONDAY" class="java.lang.Double"/>
+	<field name="REFUNDED_AMOUNT_MONDAY" class="java.lang.Double"/>
 	<field name="COUNT_TUESDAY" class="java.lang.Double"/>
+	<field name="REFUNDED_COUNT_TUESDAY" class="java.lang.Double"/>
 	<field name="AMOUNT_TUESDAY" class="java.lang.Double"/>
+	<field name="REFUNDED_AMOUNT_TUESDAY" class="java.lang.Double"/>
 	<field name="COUNT_WEDNESDAY" class="java.lang.Double"/>
+	<field name="REFUNDED_COUNT_WEDNESDAY" class="java.lang.Double"/>
 	<field name="AMOUNT_WEDNESDAY" class="java.lang.Double"/>
+	<field name="REFUNDED_AMOUNT_WEDNESDAY" class="java.lang.Double"/>
 	<field name="COUNT_THURSDAY" class="java.lang.Double"/>
+	<field name="REFUNDED_COUNT_THURSDAY" class="java.lang.Double"/>
 	<field name="AMOUNT_THURSDAY" class="java.lang.Double"/>
+	<field name="REFUNDED_AMOUNT_THURSDAY" class="java.lang.Double"/>
 	<field name="COUNT_FRIDAY" class="java.lang.Double"/>
+	<field name="REFUNDED_COUNT_FRIDAY" class="java.lang.Double"/>
 	<field name="AMOUNT_FRIDAY" class="java.lang.Double"/>
+	<field name="REFUNDED_AMOUNT_FRIDAY" class="java.lang.Double"/>
 	<field name="COUNT_SATURDAY" class="java.lang.Double"/>
+	<field name="REFUNDED_COUNT_SATURDAY" class="java.lang.Double"/>
 	<field name="AMOUNT_SATURDAY" class="java.lang.Double"/>
+	<field name="REFUNDED_AMOUNT_SATURDAY" class="java.lang.Double"/>
 	<field name="COUNT_SUNDAY" class="java.lang.Double"/>
+	<field name="REFUNDED_COUNT_SUNDAY" class="java.lang.Double"/>
 	<field name="AMOUNT_SUNDAY" class="java.lang.Double"/>
+	<field name="REFUNDED_AMOUNT_SUNDAY" class="java.lang.Double"/>
 	<field name="TOTAL_WEEK_COUNT" class="java.lang.Double"/>
+	<field name="REFUNDED_TOTAL_WEEK_COUNT" class="java.lang.Double"/>
 	<field name="TOTAL_WEEK_AMOUNT" class="java.lang.Double"/>
+	<field name="REFUNDED_TOTAL_WEEK_AMOUNT" class="java.lang.Double"/>
 
 	<variable name="TOTAL" class="java.lang.Double" resetType="Report" calculation="Sum">
-		<variableExpression><![CDATA[$F{TOTAL_WEEK_AMOUNT}]]></variableExpression>
+		<variableExpression><![CDATA[($F{TOTAL_WEEK_AMOUNT} != null ? $F{TOTAL_WEEK_AMOUNT} : 0) - ($F{REFUNDED_TOTAL_WEEK_AMOUNT} != null ? $F{REFUNDED_TOTAL_WEEK_AMOUNT} : 0)]]></variableExpression>
 	</variable>
+
 
 	<group name="type">
 		<groupExpression><![CDATA[$F{BLI_ITEM_GROUP}]]></groupExpression>
@@ -347,9 +387,9 @@ ORDER BY bli.BLI_ITEM_GROUP, bli.BLI_ITEM_DESC ASC]]>
 	</columnHeader>
 
 	<detail>
-		<band height="24" splitType="Stretch">
+		<band height="28" splitType="Stretch">
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None" hyperlinkTarget="Self">
-				<reportElement x="0" y="0" width="142" height="24" key="textField-det-desc" uuid="c0040004-0000-0000-0000-000000000040"/>
+				<reportElement x="0" y="0" width="142" height="28" key="textField-det-desc" uuid="c0040004-0000-0000-0000-000000000040"/>
 				<box leftPadding="2">
 					<leftPen lineWidth="0.25"/>
 					<bottomPen lineWidth="0.25"/>
@@ -361,92 +401,100 @@ ORDER BY bli.BLI_ITEM_GROUP, bli.BLI_ITEM_DESC ASC]]>
 				<textFieldExpression class="java.lang.String"><![CDATA[$F{BLI_ITEM_DESC}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="false" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None" hyperlinkTarget="Self">
-				<reportElement x="142" y="0" width="80" height="24" key="textField-det-mon" uuid="c0040004-0000-0000-0000-000000000041"/>
+				<reportElement x="142" y="0" width="80" height="28" key="textField-det-mon" uuid="c0040004-0000-0000-0000-000000000041"/>
 				<box rightPadding="2">
 					<bottomPen lineWidth="0.25"/>
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Right" verticalAlignment="Middle">
-					<font size="8"/>
+					<font size="7"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA[new DecimalFormat("#,##0").format($F{COUNT_MONDAY} != null ? $F{COUNT_MONDAY} : 0) + "\n" + new DecimalFormat("#,##0").format($F{AMOUNT_MONDAY} != null ? $F{AMOUNT_MONDAY} : 0)]]></textFieldExpression>
+				<textFieldExpression class="java.lang.String"><![CDATA["Qv: " + new DecimalFormat("#,##0").format($F{COUNT_MONDAY} != null ? $F{COUNT_MONDAY} : 0) + " | QR: " + new DecimalFormat("#,##0").format($F{REFUNDED_COUNT_MONDAY} != null ? $F{REFUNDED_COUNT_MONDAY} : 0) + "\n" +
+"MV: " + new DecimalFormat("#,##0").format($F{AMOUNT_MONDAY} != null ? $F{AMOUNT_MONDAY} : 0)]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="false" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None" hyperlinkTarget="Self">
-				<reportElement x="222" y="0" width="80" height="24" key="textField-det-tue" uuid="c0040004-0000-0000-0000-000000000042"/>
+				<reportElement x="222" y="0" width="80" height="28" key="textField-det-tue" uuid="c0040004-0000-0000-0000-000000000042"/>
 				<box rightPadding="2">
 					<bottomPen lineWidth="0.25"/>
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Right" verticalAlignment="Middle">
-					<font size="8"/>
+					<font size="7"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA[new DecimalFormat("#,##0").format($F{COUNT_TUESDAY} != null ? $F{COUNT_TUESDAY} : 0) + "\n" + new DecimalFormat("#,##0").format($F{AMOUNT_TUESDAY} != null ? $F{AMOUNT_TUESDAY} : 0)]]></textFieldExpression>
+				<textFieldExpression class="java.lang.String"><![CDATA["Qv: " + new DecimalFormat("#,##0").format($F{COUNT_TUESDAY} != null ? $F{COUNT_TUESDAY} : 0) + " | QR: " + new DecimalFormat("#,##0").format($F{REFUNDED_COUNT_TUESDAY} != null ? $F{REFUNDED_COUNT_TUESDAY} : 0) + "\n" +
+"MV: " + new DecimalFormat("#,##0").format($F{AMOUNT_TUESDAY} != null ? $F{AMOUNT_TUESDAY} : 0)]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="false" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None" hyperlinkTarget="Self">
-				<reportElement x="302" y="0" width="80" height="24" key="textField-det-wed" uuid="c0040004-0000-0000-0000-000000000043"/>
+				<reportElement x="302" y="0" width="80" height="28" key="textField-det-wed" uuid="c0040004-0000-0000-0000-000000000043"/>
 				<box rightPadding="2">
 					<bottomPen lineWidth="0.25"/>
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Right" verticalAlignment="Middle">
-					<font size="8"/>
+					<font size="7"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA[new DecimalFormat("#,##0").format($F{COUNT_WEDNESDAY} != null ? $F{COUNT_WEDNESDAY} : 0) + "\n" + new DecimalFormat("#,##0").format($F{AMOUNT_WEDNESDAY} != null ? $F{AMOUNT_WEDNESDAY} : 0)]]></textFieldExpression>
+				<textFieldExpression class="java.lang.String"><![CDATA["Qv: " + new DecimalFormat("#,##0").format($F{COUNT_WEDNESDAY} != null ? $F{COUNT_WEDNESDAY} : 0) + " | QR: " + new DecimalFormat("#,##0").format($F{REFUNDED_COUNT_WEDNESDAY} != null ? $F{REFUNDED_COUNT_WEDNESDAY} : 0) + "\n" +
+"MV: " + new DecimalFormat("#,##0").format($F{AMOUNT_WEDNESDAY} != null ? $F{AMOUNT_WEDNESDAY} : 0)]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="false" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None" hyperlinkTarget="Self">
-				<reportElement x="382" y="0" width="80" height="24" key="textField-det-thu" uuid="c0040004-0000-0000-0000-000000000044"/>
+				<reportElement x="382" y="0" width="80" height="28" key="textField-det-thu" uuid="c0040004-0000-0000-0000-000000000044"/>
 				<box rightPadding="2">
 					<bottomPen lineWidth="0.25"/>
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Right" verticalAlignment="Middle">
-					<font size="8"/>
+					<font size="7"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA[new DecimalFormat("#,##0").format($F{COUNT_THURSDAY} != null ? $F{COUNT_THURSDAY} : 0) + "\n" + new DecimalFormat("#,##0").format($F{AMOUNT_THURSDAY} != null ? $F{AMOUNT_THURSDAY} : 0)]]></textFieldExpression>
+				<textFieldExpression class="java.lang.String"><![CDATA["Qv: " + new DecimalFormat("#,##0").format($F{COUNT_THURSDAY} != null ? $F{COUNT_THURSDAY} : 0) + " | QR: " + new DecimalFormat("#,##0").format($F{REFUNDED_COUNT_THURSDAY} != null ? $F{REFUNDED_COUNT_THURSDAY} : 0) + "\n" +
+"MV: " + new DecimalFormat("#,##0").format($F{AMOUNT_THURSDAY} != null ? $F{AMOUNT_THURSDAY} : 0)]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="false" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None" hyperlinkTarget="Self">
-				<reportElement x="462" y="0" width="80" height="24" key="textField-det-fri" uuid="c0040004-0000-0000-0000-000000000045"/>
+				<reportElement x="462" y="0" width="80" height="28" key="textField-det-fri" uuid="c0040004-0000-0000-0000-000000000045"/>
 				<box rightPadding="2">
 					<bottomPen lineWidth="0.25"/>
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Right" verticalAlignment="Middle">
-					<font size="8"/>
+					<font size="7"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA[new DecimalFormat("#,##0").format($F{COUNT_FRIDAY} != null ? $F{COUNT_FRIDAY} : 0) + "\n" + new DecimalFormat("#,##0").format($F{AMOUNT_FRIDAY} != null ? $F{AMOUNT_FRIDAY} : 0)]]></textFieldExpression>
+				<textFieldExpression class="java.lang.String"><![CDATA["Qv: " + new DecimalFormat("#,##0").format($F{COUNT_FRIDAY} != null ? $F{COUNT_FRIDAY} : 0) + " | QR: " + new DecimalFormat("#,##0").format($F{REFUNDED_COUNT_FRIDAY} != null ? $F{REFUNDED_COUNT_FRIDAY} : 0) + "\n" +
+"MV: " + new DecimalFormat("#,##0").format($F{AMOUNT_FRIDAY} != null ? $F{AMOUNT_FRIDAY} : 0)]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="false" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None" hyperlinkTarget="Self">
-				<reportElement x="542" y="0" width="80" height="24" key="textField-det-sat" uuid="c0040004-0000-0000-0000-000000000046"/>
+				<reportElement x="542" y="0" width="80" height="28" key="textField-det-sat" uuid="c0040004-0000-0000-0000-000000000046"/>
 				<box rightPadding="2">
 					<bottomPen lineWidth="0.25"/>
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Right" verticalAlignment="Middle">
-					<font size="8"/>
+					<font size="7"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA[new DecimalFormat("#,##0").format($F{COUNT_SATURDAY} != null ? $F{COUNT_SATURDAY} : 0) + "\n" + new DecimalFormat("#,##0").format($F{AMOUNT_SATURDAY} != null ? $F{AMOUNT_SATURDAY} : 0)]]></textFieldExpression>
+				<textFieldExpression class="java.lang.String"><![CDATA["Qv: " + new DecimalFormat("#,##0").format($F{COUNT_SATURDAY} != null ? $F{COUNT_SATURDAY} : 0) + " | QR: " + new DecimalFormat("#,##0").format($F{REFUNDED_COUNT_SATURDAY} != null ? $F{REFUNDED_COUNT_SATURDAY} : 0) + "\n" +
+"MV: " + new DecimalFormat("#,##0").format($F{AMOUNT_SATURDAY} != null ? $F{AMOUNT_SATURDAY} : 0)]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="false" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None" hyperlinkTarget="Self">
-				<reportElement x="622" y="0" width="80" height="24" key="textField-det-sun" uuid="c0040004-0000-0000-0000-000000000047"/>
+				<reportElement x="622" y="0" width="80" height="28" key="textField-det-sun" uuid="c0040004-0000-0000-0000-000000000047"/>
 				<box rightPadding="2">
 					<bottomPen lineWidth="0.25"/>
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Right" verticalAlignment="Middle">
-					<font size="8"/>
+					<font size="7"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA[new DecimalFormat("#,##0").format($F{COUNT_SUNDAY} != null ? $F{COUNT_SUNDAY} : 0) + "\n" + new DecimalFormat("#,##0").format($F{AMOUNT_SUNDAY} != null ? $F{AMOUNT_SUNDAY} : 0)]]></textFieldExpression>
+				<textFieldExpression class="java.lang.String"><![CDATA["Qv: " + new DecimalFormat("#,##0").format($F{COUNT_SUNDAY} != null ? $F{COUNT_SUNDAY} : 0) + " | QR: " + new DecimalFormat("#,##0").format($F{REFUNDED_COUNT_SUNDAY} != null ? $F{REFUNDED_COUNT_SUNDAY} : 0) + "\n" +
+"MV: " + new DecimalFormat("#,##0").format($F{AMOUNT_SUNDAY} != null ? $F{AMOUNT_SUNDAY} : 0)]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="false" isBlankWhenNull="true" evaluationTime="Now" hyperlinkType="None" hyperlinkTarget="Self">
-				<reportElement x="702" y="0" width="80" height="24" key="textField-det-tot" uuid="c0040004-0000-0000-0000-000000000048"/>
+				<reportElement x="702" y="0" width="80" height="28" key="textField-det-tot" uuid="c0040004-0000-0000-0000-000000000048"/>
 				<box rightPadding="2">
 					<bottomPen lineWidth="0.25"/>
 					<rightPen lineWidth="0.25"/>
 				</box>
 				<textElement textAlignment="Right" verticalAlignment="Middle">
-					<font size="8" isBold="true"/>
+					<font size="7" isBold="true"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA[new DecimalFormat("#,##0").format($F{TOTAL_WEEK_COUNT} != null ? $F{TOTAL_WEEK_COUNT} : 0) + "\n" + new DecimalFormat("#,##0").format($F{TOTAL_WEEK_AMOUNT} != null ? $F{TOTAL_WEEK_AMOUNT} : 0)]]></textFieldExpression>
+				<textFieldExpression class="java.lang.String"><![CDATA["Qv: " + new DecimalFormat("#,##0").format($F{TOTAL_WEEK_COUNT} != null ? $F{TOTAL_WEEK_COUNT} : 0) + " | QR: " + new DecimalFormat("#,##0").format($F{REFUNDED_TOTAL_WEEK_COUNT} != null ? $F{REFUNDED_TOTAL_WEEK_COUNT} : 0) + "\n" +
+"MV: " + new DecimalFormat("#,##0").format($F{TOTAL_WEEK_AMOUNT} != null ? $F{TOTAL_WEEK_AMOUNT} : 0)]]></textFieldExpression>
 			</textField>
 		</band>
 	</detail>

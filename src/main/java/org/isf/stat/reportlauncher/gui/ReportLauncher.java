@@ -111,7 +111,6 @@ public class ReportLauncher extends ModalJFrame {
 	private JComboBox<Object> jWardComboBox;
 	private JLabel jStatusLabel;
 	private JComboBox<String> jStatusComboBox;
-
 	private JComboBox<String> jRptComboBox;
 
 	private Map<String, File> reportNameFileMap;
