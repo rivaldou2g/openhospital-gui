@@ -35,6 +35,7 @@ import java.awt.event.KeyEvent;
 import java.awt.font.TextAttribute;
 import java.io.File;
 import java.io.IOException;
+import java.text.DecimalFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -102,9 +103,11 @@ public class MedicalBrowser extends ModalJFrame implements MedicalListener {
 	private JComboBox<Integer> pagesCombo;
 	private JLabel underLabel;
 	private JLabel totalMedicalsLabel;
+	private JLabel totalStockValueLabel;
 	private int PAGES = 0;
 	private int CURRENT_PAGE = 0;
 	private long TOTAL_PAGES = 0;
+	private double totalStockValue = 0.0;
 	protected AbstractButton searchBoxButton;
 
 	private String[] pColumns = {
@@ -114,14 +117,16 @@ public class MedicalBrowser extends ModalJFrame implements MedicalListener {
 			MessageBundle.getMessage("angal.exam.articlefamily.col").toUpperCase(),
 			MessageBundle.getMessage("angal.medicals.pcsperpck.col"),
 			MessageBundle.getMessage("angal.medicals.stock.col").toUpperCase(),
+			MessageBundle.getMessage("angal.medicals.averagecostprice.col").toUpperCase(),
+			MessageBundle.getMessage("angal.medicals.totalcost.col").toUpperCase(),
 			MessageBundle.getMessage("angal.medicals.critlevel.col").toUpperCase(),
 			MessageBundle.getMessage("angal.medicals.outofstock.col").toUpperCase()
 	};
 
-	private String[] pColumnsSorter = { "MDSRT_DESC", "MDSR_CODE", "MDSR_DESC", null, null, "STOCK", "MDSR_MIN_STOCK_QTI", "STOCK" };
-	private boolean[] pColumnsNormalSorting = { true, true, true, true, true, true, true, false };
-	private int[] pColumnWidth = { 100, 100, 400, 150, 60, 60, 80, 100 };
-	private boolean[] pColumnResizable = { true, true, true, true, true, true, true, true };
+	private String[] pColumnsSorter = { "MDSRT_DESC", "MDSR_CODE", "MDSR_DESC", null, null, "STOCK", null, null, "MDSR_MIN_STOCK_QTI", "STOCK" };
+	private boolean[] pColumnsNormalSorting = { true, true, true, true, true, true, true, true, true, false };
+	private int[] pColumnWidth = { 90, 80, 320, 120, 50, 60, 90, 90, 70, 80 };
+	private boolean[] pColumnResizable = { true, true, true, true, true, true, true, true, true, true };
 
 	private Medical medical;
 	private DefaultTableModel model;
@@ -147,6 +152,7 @@ public class MedicalBrowser extends ModalJFrame implements MedicalListener {
 
 	private Map<Integer, LocalDate> expiryDateCache = new HashMap<>();
 	private Map<Integer, Double> actualQtyCache = new HashMap<>();
+	private Map<Integer, Double> averageCostCache = new HashMap<>();
 
 	public MedicalBrowser() {
 		me = this;
@@ -453,6 +459,9 @@ public class MedicalBrowser extends ModalJFrame implements MedicalListener {
 				SortOrder sortedOrder = ((SortKey) sortedKeys.get(0)).getSortOrder();
 
 				String columnName = pColumnsSorter[sortedColumn];
+				if (columnName == null) {
+					columnName = "MDSR_DESC";
+				}
 				String columnOrder = sortedOrder.toString().equals("ASCENDING") ? "ASC" : "DESC";
 				if (!pColumnsNormalSorting[sortedColumn]) {
 					columnOrder = sortedOrder.toString().equals("ASCENDING") ? "DESC" : "ASC";
@@ -801,7 +810,9 @@ public class MedicalBrowser extends ModalJFrame implements MedicalListener {
 			else if (c == 4) return Integer.class;
 			else if (c == 5) return Double.class;
 			else if (c == 6) return Double.class;
-			else if (c == 7) return Boolean.class;
+			else if (c == 7) return Double.class;
+			else if (c == 8) return Double.class;
+			else if (c == 9) return Boolean.class;
 			return null;
 		}
 
@@ -826,6 +837,7 @@ public class MedicalBrowser extends ModalJFrame implements MedicalListener {
 			Medical med = medicalList.get(r);
 			double actualQty = actualQtyCache.getOrDefault(med.getCode(), med.getInitialqty() + med.getInqty() - med.getOutqty());
 			double minQuantity = med.getMinqty();
+			Double avgCost = averageCostCache.get(med.getCode());
 			if (c == -1) return med;
 			else if (c == 0) return med.getType().getDescription();
 			else if (c == 1) return med.getProdCode();
@@ -833,8 +845,10 @@ public class MedicalBrowser extends ModalJFrame implements MedicalListener {
 			else if (c == 3) return med.getArticleFamily() != null ? med.getArticleFamily().toString() : "";
 			else if (c == 4) return med.getPcsperpck();
 			else if (c == 5) return actualQty;
-			else if (c == 6) return minQuantity;
-			else if (c == 7) return actualQty == 0;
+			else if (c == 6) return avgCost != null ? avgCost : 0.0;
+			else if (c == 7) return (avgCost != null && actualQty > 0) ? actualQty * avgCost : 0.0;
+			else if (c == 8) return minQuantity;
+			else if (c == 9) return actualQty == 0;
 			return null;
 		}
 
@@ -854,10 +868,14 @@ public class MedicalBrowser extends ModalJFrame implements MedicalListener {
 
 	class ColorTableCellRenderer extends DefaultTableCellRenderer {
 		private static final long serialVersionUID = 1L;
+		private final DecimalFormat decimalFormat = new DecimalFormat("#,##0.00");
 
 		@Override
 		public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected,
 		                                               boolean hasFocus, int row, int column) {
+			if ((column == 6 || column == 7) && value instanceof Number) {
+				value = decimalFormat.format(value);
+			}
 			Component cell = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
 			((JLabel) cell).setOpaque(true);
 
@@ -904,6 +922,16 @@ public class MedicalBrowser extends ModalJFrame implements MedicalListener {
 				}
 			}
 
+			if (column == 6 || column == 7) {
+				setHorizontalAlignment(SwingConstants.RIGHT);
+			} else if (column == 4 || column == 5 || column == 8) {
+				setHorizontalAlignment(SwingConstants.RIGHT);
+			} else if (column == 9) {
+				setHorizontalAlignment(SwingConstants.CENTER);
+			} else {
+				setHorizontalAlignment(SwingConstants.LEFT);
+			}
+
 			if (isSelected) {
 				cell.setBackground(table.getSelectionBackground());
 				cell.setForeground(table.getSelectionForeground());
@@ -947,12 +975,14 @@ public class MedicalBrowser extends ModalJFrame implements MedicalListener {
 
 		underLabel = new JLabel("/ 0 Pages");
 		totalMedicalsLabel = new JLabel(MessageBundle.getMessage("angal.medicals.totalmovement.txt") + ": 0");
+		totalStockValueLabel = new JLabel(" | " + MessageBundle.getMessage("angal.medicals.totalstockvalue.label") + ": 0.00");
 
 		panel.add(prevButton);
 		panel.add(pagesCombo);
 		panel.add(underLabel);
 		panel.add(nextButton);
 		panel.add(totalMedicalsLabel);
+		panel.add(totalStockValueLabel);
 
 		return panel;
 	}
@@ -993,6 +1023,10 @@ public class MedicalBrowser extends ModalJFrame implements MedicalListener {
 		}
 
 		totalMedicalsLabel.setText(MessageBundle.getMessage("angal.medicals.totalmovement.txt") + ": " + TOTAL_PAGES);
+		if (totalStockValueLabel != null) {
+			DecimalFormat format = new DecimalFormat("#,##0.00");
+			totalStockValueLabel.setText(" | " + MessageBundle.getMessage("angal.medicals.totalstockvalue.label") + ": " + format.format(totalStockValue));
+		}
 	}
 
 	private void loadCurrentPage() {
@@ -1030,7 +1064,7 @@ public class MedicalBrowser extends ModalJFrame implements MedicalListener {
 
 			Page<Medical> medicalPage = medicalBrowsingManager.getMedicalsByTypeDescriptionFamilyAndDeleted(
 					medicalTypeCode,
-					searchString.getText().trim(),
+					searchString != null && searchString.getText() != null ? searchString.getText().trim() : "",
 					selectedFamily,
 					active,
 					nameSorted,
@@ -1049,6 +1083,12 @@ public class MedicalBrowser extends ModalJFrame implements MedicalListener {
 			}
 
 			precomputeCaches();
+			totalStockValue = movStockInsertingManager.getTotalStockValue(
+					medicalTypeCode,
+					selectedFamily != null ? selectedFamily.getId() : null,
+					active,
+					searchString != null && searchString.getText() != null ? searchString.getText().trim() : null
+			);
 
 			if (model instanceof MedicalBrowsingModel) {
 				((MedicalBrowsingModel) model).medicalList = medicalList;
@@ -1066,6 +1106,7 @@ public class MedicalBrowser extends ModalJFrame implements MedicalListener {
 			medicalList = new ArrayList<>();
 			TOTAL_PAGES = 0;
 			PAGES = 0;
+			totalStockValue = 0.0;
 			updatePaginationControls();
 		}
 	}
@@ -1084,10 +1125,23 @@ public class MedicalBrowser extends ModalJFrame implements MedicalListener {
 			}
 			expiryDateCache = movStockInsertingManager.getNearestExpiryDateByMedicals(codes);
 		}
+
+		averageCostCache = new HashMap<>();
+		if (!medicalList.isEmpty()) {
+			List<Integer> codes = new ArrayList<>();
+			for (Medical med : medicalList) {
+				codes.add(med.getCode());
+			}
+			averageCostCache = movStockInsertingManager.getAverageCostPricesByMedicals(codes);
+		}
 	}
 
 	public void updatePageCombo() {
 		totalMedicalsLabel.setText(MessageBundle.getMessage("angal.medicals.totalmovement.txt") + ": " + TOTAL_PAGES);
+		if (totalStockValueLabel != null) {
+			DecimalFormat format = new DecimalFormat("#,##0.00");
+			totalStockValueLabel.setText(" | " + MessageBundle.getMessage("angal.medicals.totalstockvalue.label") + ": " + format.format(totalStockValue));
+		}
 		initializeCombo(PAGES);
 		underLabel.setText("/ " + PAGES + " " + MessageBundle.getMessage("angal.common.pages.txt"));
 	}
